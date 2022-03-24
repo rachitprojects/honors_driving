@@ -35,7 +35,7 @@ class CamApp(App):
         self.coords = [(12.9716, 77.5946), (12.8431, 77.4863), (13.1048, 77.5763), (12.925453, 77.546761), (12.9249, 77.5662), (12.9271, 77.5548), (12.972442, 77.580643), (12.972442, 77.580643), (12.9462, 77.5103), (12.9426, 77.6027), (12.9426, 77.6027), (13.0108, 77.6493), (12.9422, 77.5748), (12.9957, 77.5419), (12.9966, 77.6042), (13.0588, 77.59385), (12.9062, 77.7066), (12.9586, 77.5634), (12.9708, 77.5806), (13.0823, 77.5068), (12.9846, 77.6622), (13.0458, 77.5111), (12.9376, 77.5991), (12.8807, 77.5576), (12.961, 77.6387), (13.0077, 77.6737), (13.0007, 77.6165), (12.9791, 77.5777), (12.9463, 77.5669), (13.0821, 77.5762), (12.9716, 77.5946), (13.0324, 77.5992), (13.1585, 77.4888), (13.1585, 77.4888), (12.98551, 77.60678), (13.0311, 77.5569), (12.9956, 77.6113), (12.9716, 77.5946), (12.9719, 77.6412), (12.9876, 77.6379), (13.0519, 77.5416), (12.9329, 77.5839), (12.9301, 77.5877), (12.9301, 77.5877), (12.9105, 77.5857), (12.9986, 77.7631), (12.9, 77.4833), (13.0585, 77.6407), (13.0006, 77.6746), (12.9716, 77.5946), (12.9317, 77.6227), (12.9382, 77.6228), (12.9211, 77.6134), (12.9709, 77.5658), (12.9904, 77.6842), (13.0114, 77.5467), (13.0081, 77.5648), (12.9996, 77.5689), (12.9512, 77.6998), (13.0002, 77.6336), (13.032, 77.5605), (12.9717, 77.5132), (13.02889, 77.44233), (12.9642, 77.6207), (13.0124, 77.5361), (12.9396, 77.5204), (12.9769, 77.6493), (13.0085, 77.4996), (12.9906, 77.5533), (12.9634, 77.6035), (13.0223, 77.5949), (12.9864, 77.582), (12.9611, 77.6047), (12.987, 77.5662), (12.991388, 77.61186), (13.0059, 77.6231), (12.9052, 77.5433), (12.9293, 77.568), (12.9815, 77.6192), (12.9911, 77.592), (13.0754, 77.5591), (12.9699, 77.5333), (12.9645, 77.6865), (13.0319, 77.7322), (13.0041, 77.5749), (12.9496, 77.6223), (12.9698, 77.7499), (12.949, 77.5978), (13.1048, 77.5763), (13.0178, 77.5572)]
 
         self.web_cam = Camera(play=True, index=1, resolution=(640, 480))
-        self.button = Button(text="Verify", on_press=self.verify, size_hint=(1,.1))
+        # self.button = Button(text="Verify", on_press=self.verify, size_hint=(1,.1))
         self.emotion_label = Label(text="No Emotion", size_hint=(1,.1))
         self.emotion_labels = ['Angry','Disgust','Fear','Happy','Neutral', 'Sad', 'Surprise']
         self.emotion_data = []
@@ -44,7 +44,7 @@ class CamApp(App):
         # Add items to layout
         layout = BoxLayout(orientation='vertical')
         layout.add_widget(self.web_cam)
-        layout.add_widget(self.button)
+        # layout.add_widget(self.button)
         layout.add_widget(self.emotion_label)
 
         # Load tensorflow/keras model
@@ -88,7 +88,7 @@ class CamApp(App):
                 "longitude" : self.coords[self.count][1],
                 "emotion" : self.emotion_label.text
             }
-            self.emotion_data.append(json.dumps(payload))
+            self.emotion_data.append([len(self.emotion_data), json.dumps(payload)])
 
             # self.emotion_data.append((self.coords[self.count][0], self.coords[self.count][1], self.emotion_label.text))
             self.count += 1
@@ -97,7 +97,8 @@ class CamApp(App):
                 # print(self.emotion_data)
                 # Implement Kinesis code
                 # Convert to a big array and send
-                emo_data = str(self.emotion_data)
+                emo_data = str(dict(self.emotion_data)) + "         "
+                # print(emo_data)
                 subprocess.Popen(["python3", "kinesis_tests.py", emo_data])
                 self.emotion_data = []
             if self.count == 89:
@@ -130,46 +131,6 @@ class CamApp(App):
     #
     def verify(self, *args):
         pass
-    # # Verification function to verify person
-    # def verify(self, *args):
-    #     # Specify thresholds
-    #     detection_threshold = 0.99
-    #     verification_threshold = 0.8
-    #
-    #     # Capture input image from our webcam
-    #     SAVE_PATH = os.path.join('application_data', 'input_image', 'input_image.jpg')
-    #     ret, frame = self.capture.read()
-    #     frame = frame[120:120+250, 200:200+250, :]
-    #     cv2.imwrite(SAVE_PATH, frame)
-    #
-    #     # Build results array
-    #     results = []
-    #     for image in os.listdir(os.path.join('application_data', 'verification_images')):
-    #         input_img = self.preprocess(os.path.join('application_data', 'input_image', 'input_image.jpg'))
-    #         validation_img = self.preprocess(os.path.join('application_data', 'verification_images', image))
-    #
-    #         # Make Predictions
-    #         result = self.model.predict(list(np.expand_dims([input_img, validation_img], axis=1)))
-    #         results.append(result)
-    #
-    #     # Detection Threshold: Metric above which a prediciton is considered positive
-    #     detection = np.sum(np.array(results) > detection_threshold)
-    #
-    #     # Verification Threshold: Proportion of positive predictions / total positive samples
-    #     verification = detection / len(os.listdir(os.path.join('application_data', 'verification_images')))
-    #     verified = verification > verification_threshold
-    #
-    #     # Set verification text
-    #     self.verification_label.text = 'Verified' if verified == True else 'Unverified'
-    #
-    #     # Log out details
-    #     Logger.info(results)
-    #     Logger.info(detection)
-    #     Logger.info(verification)
-    #     Logger.info(verified)
-    #
-    #
-    #     return results, verified
 
 
 
