@@ -36,7 +36,7 @@ class CamApp(App):
 
         self.web_cam = Camera(play=True, index=1, resolution=(640, 480))
         # self.button = Button(text="Verify", on_press=self.verify, size_hint=(1,.1))
-        self.emotion_label = Label(text="No Emotion", size_hint=(1,.1))
+        self.emotion_label = Label(text="NoEmotion", size_hint=(1,.1))
         self.emotion_labels = ['Angry','Disgust','Fear','Happy','Neutral', 'Sad', 'Surprise']
         self.emotion_data = []
         self.count = 0
@@ -83,12 +83,14 @@ class CamApp(App):
                     prediction = self.model.predict(roi)[0]
                     label=self.emotion_labels[prediction.argmax()]
                     self.emotion_label.text = label
-            payload = {
-                "latitude" : self.coords[self.count][0],
-                "longitude" : self.coords[self.count][1],
-                "emotion" : self.emotion_label.text
-            }
-            self.emotion_data.append([len(self.emotion_data), json.dumps(payload)])
+            # payload = {
+            #     "latitude" : self.coords[self.count][0],
+            #     "longitude" : self.coords[self.count][1],
+            #     "emotion" : self.emotion_label.text
+            # }
+            # self.emotion_data.append([len(self.emotion_data), json.dumps(payload)]    )
+            data = str(self.coords[self.count][0]) + " " + str(self.coords[self.count][1]) + " " + self.emotion_label.text
+            self.emotion_data.append(data)
 
             # self.emotion_data.append((self.coords[self.count][0], self.coords[self.count][1], self.emotion_label.text))
             self.count += 1
@@ -97,7 +99,9 @@ class CamApp(App):
                 # print(self.emotion_data)
                 # Implement Kinesis code
                 # Convert to a big array and send
-                emo_data = str(dict(self.emotion_data)) + "         "
+                # emo_data = str(dict(self.emotion_data)) + "         "
+                # print(emo_data)
+                emo_data = ";".join(self.emotion_data)
                 # print(emo_data)
                 subprocess.Popen(["python3", "kinesis_tests.py", emo_data])
                 self.emotion_data = []
