@@ -2,7 +2,7 @@ import boto3
 import json
 from sys import argv
 
-my_stream_name = "emotion-driving"
+my_stream_name = "emotion-honors"
 client = boto3.client("kinesis")
 # response = client.describe_stream(StreamName=my_stream_name)
 # response = client.get_records()
