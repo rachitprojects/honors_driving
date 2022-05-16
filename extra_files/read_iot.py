@@ -11,9 +11,7 @@ with open("arduinoiot.txt") as test:
     prev_ultra_dist = 1200
     low_illum = False
     overtaking = False
-    temp = p[0].split(";")[0].split(" ")
-    gmap3 = gmplot.GoogleMapPlotter(float(temp[3]), float(temp[4]), 13)
-    # gmap3 = gmplot.GoogleMapPlotter(12.9716, 77.5946, 13)
+    gmap3 = gmplot.GoogleMapPlotter(12.9716, 77.5946, 13)
     map_count = 0
     count = 0
     plot_count = 0
@@ -47,7 +45,7 @@ with open("arduinoiot.txt") as test:
                 if not overtaking:
                     if ultra_dist - prev_ultra_dist < -100:
                         print("plot overtake on map")
-                        gmap3.marker(float(entry[3]), float(entry[4]) + 1, color="red")
+                        gmap3.marker(float(entry[3]), float(entry[4]), color="red")
                         overtaking = True
                         print(float(entry[3]), float(entry[4]))
                         prev_ultra_dist = ultra_dist

@@ -22,9 +22,12 @@ import numpy as np
 
 import boto3
 import json
+import time
 
 from PIL import Image
 import subprocess
+
+# import matplotlib.pyplot as plt
 
 # Build app and layout
 class CamApp(App):
@@ -48,7 +51,7 @@ class CamApp(App):
         layout.add_widget(self.emotion_label)
 
         # Load tensorflow/keras model
-        self.model = tf.keras.models.load_model('siamesemodel.h5')
+        self.model = tf.keras.models.load_model('mobnet.h5')
         self.face_classifier = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
         # Setup video capture device
@@ -69,18 +72,33 @@ class CamApp(App):
             # print(numpy_picture)
 
             gray = cv2.cvtColor(numpy_picture,cv2.COLOR_BGR2GRAY)
+            # print(numpy_picture.shape)
             faces = self.face_classifier.detectMultiScale(gray)
+            # faces = self.face_classifier.detectMultiScale(numpy_picture)
 
             for (x,y,w,h) in faces:
                 roi_gray = gray[y:y+h,x:x+w]
-                roi_gray = cv2.resize(roi_gray,(48,48),interpolation=cv2.INTER_AREA)
+                # roi_gray = numpy_picture[y:y+h,x:x+w]
+                roi_gray = cv2.resize(roi_gray,(128,128),interpolation=cv2.INTER_AREA)
+                print(roi_gray.shape)
+                roi_gray = np.dstack([roi_gray, roi_gray, roi_gray])
+                # print(roi_gray)
+                # roi_gray = roi_gray[:,:,:3]
+                im = Image.fromarray(roi_gray)
+                im.save("file.png")
 
                 if np.sum([roi_gray])!=0:
                     roi = roi_gray.astype('float')/255.0
                     roi = img_to_array(roi)
+                    print(roi.shape)
                     roi = np.expand_dims(roi,axis=0)
 
+                    start = time.time()
                     prediction = self.model.predict(roi)[0]
+                    end = time.time()
+                    print(end - start)
+                    # prediction[5] = prediction[5] * 0.3
+                    print(prediction)
                     label=self.emotion_labels[prediction.argmax()]
                     self.emotion_label.text = label
             # payload = {
@@ -95,15 +113,15 @@ class CamApp(App):
             # self.emotion_data.append((self.coords[self.count][0], self.coords[self.count][1], self.emotion_label.text))
             self.count += 1
             # print(len(self.emotion_data))
-            if len(self.emotion_data) == 9:
+            if len(self.emotion_data) == 3:
                 # print(self.emotion_data)
                 # Implement Kinesis code
                 # Convert to a big array and send
                 # emo_data = str(dict(self.emotion_data)) + "         "
                 # print(emo_data)
-                emo_data = ";".join(self.emotion_data)
+                # emo_data = ";".join(self.emotion_data)
                 # print(emo_data)
-                subprocess.Popen(["python3", "kinesis_tests.py", emo_data])
+                # subprocess.Popen(["python3", "kinesis_tests.py", emo_data])
                 self.emotion_data = []
             if self.count == 89:
                 self.count = 0
